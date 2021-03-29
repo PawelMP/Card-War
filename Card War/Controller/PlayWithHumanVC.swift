@@ -30,96 +30,37 @@ class PlayWithHumanVC: UIViewController {
     }
     
     private func setupActions() {
-        myView?.firstPlayerButton.addTarget(self, action: #selector(buttonTouched(_:)), for: .touchDown)
         myView?.firstPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         
-        myView?.secondPlayerButton.addTarget(self, action: #selector(buttonTouched(_:)), for: .touchDown)
         myView?.secondPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-    }
-    
-    @objc func buttonTouched(_ sender: UIButton) {
-        //sender.alpha = 0.7
+        
+        myView?.collectCardsButton.addTarget(self, action: #selector(collectCardsButtonPressed(_:)), for: .touchUpInside)
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
-        //sender.alpha = 1
         switch sender.tag {
         case 1:
             gameViewModel?.firstPlayerPlayCard()
-            print("jeden")
-            /*if isOpenFirst {
-                isOpenFirst = false
-                let image = UIImage(named: "blue_back")
-                sender.setImage(image, for: .normal)
-                self.myView?.layoutIfNeeded()
-
-                UIView.transition(with: myView!.firstPlayerButton, duration: 1, options: .transitionFlipFromLeft, animations: nil, completion: {_ in
-                    UIView.animate(withDuration: 1, animations: {
-
-                        self.myView?.firstPlayerButtonTopConstraint.isActive = false
-                        self.myView?.firstPlayerButtonBottomConstraint.isActive = true
-                        self.myView?.layoutIfNeeded()
-                    })
-                })
-            }
-            else {
-                isOpenFirst = true
-                let image = UIImage(named: "9D")
-                //sender.setImage(image, for: .normal)
-                self.myView?.layoutIfNeeded()
-                
-                UIView.animate(withDuration: 0.6, animations: {
-
-                    self.myView?.firstPlayerButtonBottomConstraint.isActive = false
-                    self.myView?.firstPlayerButtonTopConstraint.isActive = true
-                    self.myView?.layoutIfNeeded()
-                })
-                
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    sender.setImage(image, for: .normal)
-                    UIView.transition(with: self.myView!.firstPlayerButton, duration: 0.3, options: .transitionFlipFromRight, animations: nil, completion: nil)
-                    self.myView?.firstPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-                }
-            }*/
         case 2:
             gameViewModel?.secondPlayerPlayCard()
-            print("dwa")
-            /*if isOpenSecond {
-                isOpenSecond = false
-                let image = UIImage(named: "red_back")
-                sender.setImage(image, for: .normal)
-                self.myView?.layoutIfNeeded()
-                
-                UIView.transition(with: myView!.secondPlayerButton, duration: 3, options: .transitionFlipFromBottom, animations: {
-                    self.myView?.layoutIfNeeded()
-                    self.myView?.secondPlayerButtonBottomConstraint.isActive = false
-                    self.myView?.secondPlayerButtonTopConstraint.isActive = true
-                    
-                    self.myView?.layoutIfNeeded()
-                }, completion: nil)
-            }
-            else {
-                isOpenSecond = true
-                let image = UIImage(named: "5C")
-                //sender.setImage(image, for: .normal)
-                self.myView?.layoutIfNeeded()
-                
-                UIView.animate(withDuration: 0.6, animations: {
-
-                    self.myView?.secondPlayerButtonTopConstraint.isActive = false
-                    self.myView?.secondPlayerButtonBottomConstraint.isActive = true
-                    self.myView?.layoutIfNeeded()
-                })
-                
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    sender.setImage(image, for: .normal)
-                    UIView.transition(with: self.myView!.secondPlayerButton, duration: 0.3, options: .transitionFlipFromLeft, animations: nil, completion: nil)
-                    self.myView?.secondPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-                }
-            }*/
         default:
             break
         }
+    }
+    
+    @objc func collectCardsButtonPressed(_ sender: UIButton) {
+        for imageWithConstraints in myView!.cardImages {
+            myView?.gatherCardsAnimation(imageView: imageWithConstraints)
+            //myView?.collectCardForFirstPlayer(imageView: imageWithConstraints)
+            //image.removeFromSuperview()
+        }
+        
+        myView?.cardImages.removeAll()
+        print("Collected cards")
+        myView?.collectCardsButton.isEnabled = false
+        
+        myView?.firstPlayerButton.isEnabled = true
+        myView?.secondPlayerButton.isEnabled = true
     }
     
 
@@ -136,12 +77,18 @@ class PlayWithHumanVC: UIViewController {
 }
 
 extension PlayWithHumanVC: GameViewModelDelegate {
-    func firstPlayerCard(card: Card) {
-        let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
+    func dealDidEnd() {
+        myView?.collectCardsButton.isEnabled = true
+    }
+    
+    func firstPlayerCard(cardImage: UIImage, backImage: UIImage) {
+        //let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
 
-        self.myView?.layoutIfNeeded()
+        //myView?.layoutIfNeeded()
         
-        UIView.animate(withDuration: 0.6, animations: {
+        myView?.createImageViewAndAnimate(with: cardImage, backImage: backImage, for: 1)
+        
+        /*UIView.animate(withDuration: 0.6, animations: {
 
             self.myView?.firstPlayerButtonBottomConstraint.isActive = false
             self.myView?.firstPlayerButtonTopConstraint.isActive = true
@@ -152,15 +99,17 @@ extension PlayWithHumanVC: GameViewModelDelegate {
             self.myView?.firstPlayerButton.setImage(image, for: .normal)
             UIView.transition(with: self.myView!.firstPlayerButton, duration: 0.3, options: .transitionFlipFromRight, animations: nil, completion: nil)
             self.myView?.firstPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-        }
+        }*/
     }
     
-    func secondPlayerCard(card: Card) {
-        let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
+    func secondPlayerCard(cardImage: UIImage, backImage: UIImage) {
+        //let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
 
-        self.myView?.layoutIfNeeded()
+        myView?.layoutIfNeeded()
         
-        UIView.animate(withDuration: 0.6, animations: {
+        myView?.createImageViewAndAnimate(with: cardImage, backImage: backImage, for: 2)
+        
+        /*UIView.animate(withDuration: 0.6, animations: {
 
             self.myView?.secondPlayerButtonTopConstraint.isActive = false
             self.myView?.secondPlayerButtonBottomConstraint.isActive = true
@@ -171,7 +120,7 @@ extension PlayWithHumanVC: GameViewModelDelegate {
             self.myView?.secondPlayerButton.setImage(image, for: .normal)
             UIView.transition(with: self.myView!.secondPlayerButton, duration: 0.3, options: .transitionFlipFromLeft, animations: nil, completion: nil)
             self.myView?.secondPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-        }
+        }*/
     }
     
     
