@@ -34,10 +34,13 @@ class PlayWithHumanVC: UIViewController {
         
         myView?.secondPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         
-        myView?.collectCardsButton.addTarget(self, action: #selector(collectCardsButtonPressed(_:)), for: .touchUpInside)
+        myView?.collectCardsFirstPlayerButton.addTarget(self, action: #selector(collectCardsForFirstPlayer(_:)), for: .touchUpInside)
+        
+        myView?.collectCardsSecondPlayerButton.addTarget(self, action: #selector(collectCardsForSecondPlayer(_:)), for: .touchUpInside)
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
+        sender.isEnabled = false
         switch sender.tag {
         case 1:
             gameViewModel?.firstPlayerPlayCard()
@@ -48,22 +51,36 @@ class PlayWithHumanVC: UIViewController {
         }
     }
     
-    @objc func collectCardsButtonPressed(_ sender: UIButton) {
+    @objc func collectCardsForFirstPlayer(_ sender: UIButton) {
         for imageWithConstraints in myView!.cardImages {
-            myView?.gatherCardsAnimation(imageView: imageWithConstraints)
-            //myView?.collectCardForFirstPlayer(imageView: imageWithConstraints)
-            //image.removeFromSuperview()
+            myView?.collectCardsAnimation(imageView: imageWithConstraints, player: .first, completion: nil)
         }
         
         myView?.cardImages.removeAll()
         print("Collected cards")
-        myView?.collectCardsButton.isEnabled = false
+        sender.isEnabled = false
         
+        enablePlayersButtons()
+    }
+    
+    @objc func collectCardsForSecondPlayer(_ sender: UIButton) {
+        for imageWithConstraints in myView!.cardImages {
+            myView?.collectCardsAnimation(imageView: imageWithConstraints, player: .second, completion: nil)
+        }
+        
+        myView?.cardImages.removeAll()
+        print("Collected cards")
+        sender.isEnabled = false
+        
+        enablePlayersButtons()
+    }
+    
+
+    private func enablePlayersButtons() {
         myView?.firstPlayerButton.isEnabled = true
         myView?.secondPlayerButton.isEnabled = true
     }
     
-
     /*
     // MARK: - Navigation
 
@@ -77,51 +94,36 @@ class PlayWithHumanVC: UIViewController {
 }
 
 extension PlayWithHumanVC: GameViewModelDelegate {
-    func dealDidEnd() {
-        myView?.collectCardsButton.isEnabled = true
+    
+    func firstPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage) {
+        myView?.createCardWithAnimation(with: cardImage, backImage: backImage, for: .first, cardType: .normal)
     }
     
-    func firstPlayerCard(cardImage: UIImage, backImage: UIImage) {
-        //let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
-
-        //myView?.layoutIfNeeded()
-        
-        myView?.createImageViewAndAnimate(with: cardImage, backImage: backImage, for: 1)
-        
-        /*UIView.animate(withDuration: 0.6, animations: {
-
-            self.myView?.firstPlayerButtonBottomConstraint.isActive = false
-            self.myView?.firstPlayerButtonTopConstraint.isActive = true
-            self.myView?.layoutIfNeeded()
-        })
-        
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            self.myView?.firstPlayerButton.setImage(image, for: .normal)
-            UIView.transition(with: self.myView!.firstPlayerButton, duration: 0.3, options: .transitionFlipFromRight, animations: nil, completion: nil)
-            self.myView?.firstPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-        }*/
+    func secondPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage) {
+        myView?.createCardWithAnimation(with: cardImage, backImage: backImage, for: .second, cardType: .normal)
     }
     
-    func secondPlayerCard(cardImage: UIImage, backImage: UIImage) {
-        //let image = UIImage(named: card.rank.rawValue.description + card.suit.rawValue)
-
-        myView?.layoutIfNeeded()
-        
-        myView?.createImageViewAndAnimate(with: cardImage, backImage: backImage, for: 2)
-        
-        /*UIView.animate(withDuration: 0.6, animations: {
-
-            self.myView?.secondPlayerButtonTopConstraint.isActive = false
-            self.myView?.secondPlayerButtonBottomConstraint.isActive = true
-            self.myView?.layoutIfNeeded()
-        })
-        
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            self.myView?.secondPlayerButton.setImage(image, for: .normal)
-            UIView.transition(with: self.myView!.secondPlayerButton, duration: 0.3, options: .transitionFlipFromLeft, animations: nil, completion: nil)
-            self.myView?.secondPlayerButton.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-        }*/
+    func firstPlayerPlayWarCard(backImage: UIImage) {
+        myView?.createCardWithAnimation(with: nil, backImage: backImage, for: .first, cardType: .war)
     }
     
+    func secondPlayerPlayWarCard(backImage: UIImage) {
+        myView?.createCardWithAnimation(with: nil, backImage: backImage, for: .second, cardType: .war)
+    }
+    
+    func dealDidEnd(player: PlayerNumber) {
+        switch player {
+        case .first:
+            myView?.collectCardsFirstPlayerButton.isEnabled = true
+        case .second:
+            myView?.collectCardsSecondPlayerButton.isEnabled = true
+        case .nobody:
+            break
+        }
+    }
+    
+    func warExists() {
+        enablePlayersButtons()
+    }
     
 }

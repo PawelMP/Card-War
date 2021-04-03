@@ -9,9 +9,12 @@ import Foundation
 import UIKit
 
 protocol GameViewModelDelegate {
-    func firstPlayerCard(cardImage: UIImage, backImage: UIImage)
-    func secondPlayerCard(cardImage: UIImage, backImage: UIImage)
-    func dealDidEnd()
+    func firstPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage)
+    func secondPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage)
+    func firstPlayerPlayWarCard(backImage: UIImage)
+    func secondPlayerPlayWarCard(backImage: UIImage)
+    func warExists()
+    func dealDidEnd(player: PlayerNumber)
 }
 
 class GameViewModel {
@@ -27,38 +30,63 @@ class GameViewModel {
     
     func firstPlayerPlayCard() {
         if let card = firstPlayer.playCard() {
-            if game.gameType == .normal {
-                game.firstPlayerCardOnTable = card
+            
+            if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
+                switch game.gameType {
+                case .normal:
+                    //na widoku karta figura do gory
+                    delegate?.firstPlayerPlayNormalCard(cardImage: cardImage, backImage: backImage)
+                    game.firstPlayerCardOnTable = card
+                case .war:
+                    //na widoku karta figura do dolu
+                    delegate?.firstPlayerPlayWarCard(backImage: backImage)
+                }
             }
-            else if game.gameType == .war {
-                game.gameType = .normal
-            }
+            
             game.firstPlayerCardsStack.append(card)
             print("Player one pulled \(card.rank) of \(card.suit)")
-            if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
-                delegate?.firstPlayerCard(cardImage: cardImage, backImage: backImage)
-            }
+            /*if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
+             delegate?.firstPlayerCard(cardImage: cardImage, backImage: backImage)
+             }*/
         }
-        game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer, dealEnded: {
-            delegate?.dealDidEnd()
-        })
+        game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer,
+                        dealEnded: { player in
+                            delegate?.dealDidEnd(player: player)
+                        },
+                        warExists: {
+                            delegate?.warExists()
+                        })
     }
     
     func secondPlayerPlayCard() {
         if let card = secondPlayer.playCard() {
-            if game.gameType == .normal {
-                game.secondPlayerCardOnTable = card
-            }
-            game.secondPlayerCardsStack.append(card)
-            print("Player two pulled \(card.rank) of \(card.suit)")
+            
             if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
-                delegate?.secondPlayerCard(cardImage: cardImage, backImage: backImage)
+                switch game.gameType {
+                case .normal:
+                    //na widoku karta figura do gory
+                    delegate?.secondPlayerPlayNormalCard(cardImage: cardImage, backImage: backImage)
+                    game.secondPlayerCardOnTable = card
+                case .war:
+                    //na widoku karta figura do dolu
+                    delegate?.secondPlayerPlayWarCard(backImage: backImage)
+                }
             }
             
+            game.secondPlayerCardsStack.append(card)
+            print("Player two pulled \(card.rank) of \(card.suit)")
+            /*if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
+             delegate?.secondPlayerCard(cardImage: cardImage, backImage: backImage)
+             }*/
+            
         }
-        game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer, dealEnded: {
-            delegate?.dealDidEnd()
-        })
+        game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer,
+                        dealEnded: { player in
+                            delegate?.dealDidEnd(player: player)
+                        },
+                        warExists: {
+                            delegate?.warExists()
+                        })
     }
     
 }

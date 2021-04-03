@@ -30,3 +30,7 @@ class Player/*: Equatable*/ {
     }
     
 }
+
+enum PlayerNumber {
+    case first, second, nobody
+}
