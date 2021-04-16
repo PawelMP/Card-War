@@ -21,6 +21,7 @@ struct K {
         }
         struct Font {
             static let PlayButtonFont = UIFont(name: "Marker Felt", size: 25)
+            static let GameDescriptionFont = UIFont(name: "Marker Felt", size: UIScreen.main.bounds.height/50)
             static let LogoFont = UIFont(name: "GillSans-UltraBold", size: 80)
         }
         struct PlayButtonProperties {

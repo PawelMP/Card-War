@@ -10,11 +10,14 @@ import UIKit
 
 protocol GameViewModelDelegate {
     func firstPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage)
+    func updatePlayersScore(first: Int, second: Int)
     func secondPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage)
     func firstPlayerPlayWarCard(backImage: UIImage)
     func secondPlayerPlayWarCard(backImage: UIImage)
     func warExists()
     func dealDidEnd(player: PlayerNumber)
+    func firstPlayerWonGame()
+    func secondPlayerWonGame()
 }
 
 class GameViewModel {
@@ -42,12 +45,9 @@ class GameViewModel {
                     delegate?.firstPlayerPlayWarCard(backImage: backImage)
                 }
             }
-            
+            delegate?.updatePlayersScore(first: firstPlayer.cards.count, second: secondPlayer.cards.count)
             game.firstPlayerCardsStack.append(card)
             print("Player one pulled \(card.rank) of \(card.suit)")
-            /*if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
-             delegate?.firstPlayerCard(cardImage: cardImage, backImage: backImage)
-             }*/
         }
         game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer,
                         dealEnded: { player in
@@ -72,13 +72,9 @@ class GameViewModel {
                     delegate?.secondPlayerPlayWarCard(backImage: backImage)
                 }
             }
-            
+            delegate?.updatePlayersScore(first: firstPlayer.cards.count, second: secondPlayer.cards.count)
             game.secondPlayerCardsStack.append(card)
             print("Player two pulled \(card.rank) of \(card.suit)")
-            /*if let cardImage = UIImage(named: card.rank.rawValue.description + card.suit.rawValue), let backImage = UIImage(named: card.back.rawValue) {
-             delegate?.secondPlayerCard(cardImage: cardImage, backImage: backImage)
-             }*/
-            
         }
         game.checkCards(firstPlayer: firstPlayer, secondPlayer: secondPlayer,
                         dealEnded: { player in
@@ -87,6 +83,23 @@ class GameViewModel {
                         warExists: {
                             delegate?.warExists()
                         })
+    }
+    
+    func checkIfGameNeedsToEnd() {
+        switch game.playerThatWon {
+        case .first:
+            delegate?.firstPlayerWonGame()
+        case .second:
+            delegate?.secondPlayerWonGame()
+        default:
+            break
+        }
+    }
+    
+    func updatePlayersScore() {
+        let first = firstPlayer.cards.count
+        let second = secondPlayer.cards.count
+        delegate?.updatePlayersScore(first: first, second: second)
     }
     
 }

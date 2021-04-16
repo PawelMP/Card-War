@@ -14,12 +14,17 @@ class Game {
     var firstPlayerCardsStack: [Card]
     var secondPlayerCardsStack: [Card]
     
-    var gameType: GameType = .normal
-    private var warCardCounter: Int = 0
+    var gameType: GameType
+    private var warCardCounter: Int
+    
+    var playerThatWon: PlayerNumber?
     
     init() {
         self.firstPlayerCardsStack = []
         self.secondPlayerCardsStack = []
+        self.gameType = .normal
+        warCardCounter = 0
+        //gameDidEnd = false
     }
     
     func startGame(players: [Player]) {
@@ -84,8 +89,8 @@ class Game {
                         secondPlayer.cards += secondPlayerCardsStack
                         
                         resetCards()
-                        
-                        dealEnded(.nobody)
+                        playerThatWon = .second
+                        dealEnded(.second)
                         return //np return false i w GameViewModel jezeli funkcja zwroci false to wtedy wywoluje metode z delegate powiadamiajaca o wygranej gracza
                     }
                     if secondPlayer.cards.isEmpty == true || secondPlayer.cards.count == 1 {
@@ -94,8 +99,8 @@ class Game {
                         firstPlayer.cards += secondPlayerCardsStack
                         
                         resetCards()
-                        
-                        dealEnded(.nobody)
+                        playerThatWon = .first
+                        dealEnded(.first)
                         return
                     }
                     
@@ -114,6 +119,9 @@ class Game {
                     resetCards()
                     print("First player cards \(firstPlayer.cards.count)")
                     print("Second player cards \(secondPlayer.cards.count)")
+                    if secondPlayer.cards.isEmpty {
+                        playerThatWon = .first
+                    }
                     
                     dealEnded(.first)
                 }
@@ -125,6 +133,10 @@ class Game {
                     resetCards()
                     print("First player cards \(firstPlayer.cards.count)")
                     print("Second player cards \(secondPlayer.cards.count)")
+                    
+                    if firstPlayer.cards.isEmpty {
+                        playerThatWon = .second
+                    }
                     
                     dealEnded(.second)
                 }

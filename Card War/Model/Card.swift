@@ -38,7 +38,7 @@ enum Suit: String, CaseIterable {
 }
 
 enum Rank: Int, CaseIterable {
-    case Two = 2, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
+    case Two = 2, Three//, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
 }
 
 enum Color: String{

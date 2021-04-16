@@ -27,9 +27,12 @@ class PlayWithHumanVC: UIViewController {
         
         gameViewModel = GameViewModel()
         gameViewModel?.delegate = self
+        gameViewModel?.updatePlayersScore()
     }
     
     private func setupActions() {
+        myView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(descriptionLabelPressed(_:))))
+        
         myView?.firstPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         
         myView?.secondPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
@@ -37,6 +40,18 @@ class PlayWithHumanVC: UIViewController {
         myView?.collectCardsFirstPlayerButton.addTarget(self, action: #selector(collectCardsForFirstPlayer(_:)), for: .touchUpInside)
         
         myView?.collectCardsSecondPlayerButton.addTarget(self, action: #selector(collectCardsForSecondPlayer(_:)), for: .touchUpInside)
+        
+        myView?.collectCardsWhenDrawButton.addTarget(self, action: #selector(collectCardsWhenDraw(_:)), for: .touchUpInside)
+    }
+    
+    @objc func descriptionLabelPressed(_ sender: UITapGestureRecognizer) {
+        print("Pressed")
+        //sender.isEnabled = false
+        //sender.isHidden = false
+        myView?.descriptionLabel.isHidden = true
+        enablePlayersButtons()
+        //sender.text = " LOL"
+        //sender.isEnabled = false
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
@@ -52,33 +67,42 @@ class PlayWithHumanVC: UIViewController {
     }
     
     @objc func collectCardsForFirstPlayer(_ sender: UIButton) {
-        for imageWithConstraints in myView!.cardImages {
-            myView?.collectCardsAnimation(imageView: imageWithConstraints, player: .first, completion: nil)
-        }
+        myView?.collectCards(for: .first)
         
-        myView?.cardImages.removeAll()
-        print("Collected cards")
         sender.isEnabled = false
-        
         enablePlayersButtons()
+        
+        gameViewModel?.updatePlayersScore()
+        gameViewModel?.checkIfGameNeedsToEnd()
     }
     
     @objc func collectCardsForSecondPlayer(_ sender: UIButton) {
-        for imageWithConstraints in myView!.cardImages {
-            myView?.collectCardsAnimation(imageView: imageWithConstraints, player: .second, completion: nil)
-        }
+        myView?.collectCards(for: .second)
         
-        myView?.cardImages.removeAll()
-        print("Collected cards")
         sender.isEnabled = false
-        
         enablePlayersButtons()
+        gameViewModel?.updatePlayersScore()
+        gameViewModel?.checkIfGameNeedsToEnd()
+    }
+    
+    @objc func collectCardsWhenDraw(_ sender: UIButton) {
+        myView?.collectCards(for: .nobody)
+        
+        sender.isEnabled = false
+        enablePlayersButtons()
+        self.gameViewModel?.updatePlayersScore()
     }
     
 
     private func enablePlayersButtons() {
         myView?.firstPlayerButton.isEnabled = true
         myView?.secondPlayerButton.isEnabled = true
+    }
+    
+    private func disableButtons() {
+        myView?.firstPlayerButton.isEnabled = false
+        myView?.secondPlayerButton.isEnabled = false
+        myView?.collectCardsWhenDrawButton.isEnabled = false
     }
     
     /*
@@ -94,6 +118,11 @@ class PlayWithHumanVC: UIViewController {
 }
 
 extension PlayWithHumanVC: GameViewModelDelegate {
+    
+    func updatePlayersScore(first: Int, second: Int) {
+        myView?.firstPlayerScoreLabel.text = "Score: " + first.description
+        myView?.secondPlayerScoreLabel.text = "Score: " + second.description
+    }
     
     func firstPlayerPlayNormalCard(cardImage: UIImage, backImage: UIImage) {
         myView?.createCardWithAnimation(with: cardImage, backImage: backImage, for: .first, cardType: .normal)
@@ -118,12 +147,22 @@ extension PlayWithHumanVC: GameViewModelDelegate {
         case .second:
             myView?.collectCardsSecondPlayerButton.isEnabled = true
         case .nobody:
-            break
+            myView?.collectCardsWhenDrawButton.isEnabled = true
         }
     }
     
     func warExists() {
         enablePlayersButtons()
+    }
+    
+    func firstPlayerWonGame() {
+        print("First player won whole gaaaaame")
+        disableButtons()
+    }
+    
+    func secondPlayerWonGame() {
+        print("Second player won whole gaaaaame")
+        disableButtons()
     }
     
 }

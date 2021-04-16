@@ -14,7 +14,25 @@ class PlayView: UIView {
         button.setImage(UIImage(named: "blue_back"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFit
         button.tag = 1
+        button.isEnabled = false
         return button
+    }()
+    
+    public var firstPlayerScoreLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Score: First"
+        label.textColor = .white
+        label.font = K.Design.Font.GameDescriptionFont
+        return label
+    }()
+    
+    public var secondPlayerScoreLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Score: Second"
+        label.textColor = .white
+        label.font = K.Design.Font.GameDescriptionFont
+        label.transform = CGAffineTransform(rotationAngle: .pi)
+        return label
     }()
     
     public var secondPlayerButton: UIButton = {
@@ -22,6 +40,7 @@ class PlayView: UIView {
         button.setImage(UIImage(named: "blue_back"), for: .normal)
         button.imageView?.contentMode = .scaleAspectFit
         button.tag = 2
+        button.isEnabled = false
         return button
     }()
     
@@ -37,20 +56,37 @@ class PlayView: UIView {
         return button
     }()
     
-    public var cardImages: [(UIImageView, NSLayoutConstraint, NSLayoutConstraint, CardType)] = []
+    public var collectCardsWhenDrawButton: UIButton = {
+        let button = UIButton()
+        button.isEnabled = false
+        return button
+    }()
+    
+    public var descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.alpha = 0.5
+        label.textColor = .white
+        label.font = K.Design.Font.GameDescriptionFont
+        label.textAlignment = .center
+        label.text = """
+                There will be some awesome game description.
+                Click anywhere to start
+                """
+        label.backgroundColor = .black
+        label.layer.masksToBounds = true
+        label.layer.cornerRadius = 20
+        label.numberOfLines = 0
+        return label
+    }()
+    
+    public var cardViews: [CardPropertiesUI] = []
     
     private var backgroundImageView: UIImageView = {
         let image = UIImageView()
         image.image = K.Design.Image.Background
+        //image.contentMode = .scaleToFill
         return image
     }()
-    
-    public var firstPlayerButtonBottomConstraint: NSLayoutConstraint!
-    public var firstPlayerButtonTopConstraint: NSLayoutConstraint!
-    
-    public var secondPlayerButtonBottomConstraint: NSLayoutConstraint!
-    public var secondPlayerButtonTopConstraint: NSLayoutConstraint!
-    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -71,11 +107,24 @@ class PlayView: UIView {
         addSubview(secondPlayerButton)
         addSecondPlayerButtonConstraints()
         
+        addSubview(firstPlayerScoreLabel)
+        addFirstPlayerScoreLabelConstraint(for: firstPlayerScoreLabel)
+        
+        addSubview(secondPlayerScoreLabel)
+        addSecondPlayerScoreLabelConstraint(for: secondPlayerScoreLabel)
+        
         addSubview(collectCardsFirstPlayerButton)
         addCollectCardsButtonConstraints(for: collectCardsFirstPlayerButton)
         
         addSubview(collectCardsSecondPlayerButton)
         addCollectCardsButtonConstraints(for: collectCardsSecondPlayerButton)
+        
+        addSubview(collectCardsWhenDrawButton)
+        addCollectCardsButtonConstraints(for: collectCardsWhenDrawButton)
+        
+        addSubview(descriptionLabel)
+        addDescriptionLabelConstraint(for: descriptionLabel)
+        
     }
     
     private func addBackgroundImageViewConstraints() {
@@ -91,9 +140,7 @@ class PlayView: UIView {
         firstPlayerButton.widthAnchor.constraint(equalToConstant: self.bounds.width/5).isActive = true
         firstPlayerButton.heightAnchor.constraint(equalTo: firstPlayerButton.widthAnchor, multiplier: 1.54).isActive = true
         
-        firstPlayerButtonBottomConstraint = NSLayoutConstraint(item: firstPlayerButton, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: -self.bounds.height/10)
-        firstPlayerButtonBottomConstraint.isActive = true
-        firstPlayerButtonTopConstraint = NSLayoutConstraint(item: firstPlayerButton, attribute: .top, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: self.bounds.height*0.01)
+        firstPlayerButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -self.bounds.height/10).isActive = true
     }
     
     private func addSecondPlayerButtonConstraints() {
@@ -103,10 +150,7 @@ class PlayView: UIView {
         secondPlayerButton.widthAnchor.constraint(equalToConstant: self.bounds.width/5).isActive = true
         secondPlayerButton.heightAnchor.constraint(equalTo: secondPlayerButton.widthAnchor, multiplier: 1.54).isActive = true
         
-        secondPlayerButtonBottomConstraint = NSLayoutConstraint(item: secondPlayerButton, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: -self.bounds.height*0.01)
-        secondPlayerButtonTopConstraint = NSLayoutConstraint(item: secondPlayerButton, attribute: .top, relatedBy: .equal, toItem: self, attribute: .top, multiplier: 1, constant: self.bounds.height/10)
-        
-        secondPlayerButtonTopConstraint.isActive = true
+        secondPlayerButton.topAnchor.constraint(equalTo: self.topAnchor, constant: self.bounds.height/10).isActive = true
     }
     
     func addCollectCardsButtonConstraints(for button: UIButton) {
@@ -118,26 +162,79 @@ class PlayView: UIView {
         button.heightAnchor.constraint(equalTo: firstPlayerButton.heightAnchor, multiplier: 2.1).isActive = true
     }
     
-    public func createCardWithAnimation(with card: UIImage?, backImage : UIImage, for player: PlayerNumber, cardType: CardType) {
+    private func addDescriptionLabelConstraint(for label: UILabel) {
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        label.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        
+        label.widthAnchor.constraint(equalToConstant: self.bounds.width).isActive = true
+        label.heightAnchor.constraint(equalToConstant: self.bounds.height).isActive = true
+    }
+    
+    private func addFirstPlayerScoreLabelConstraint(for label: UILabel) {
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        var constraint: NSLayoutConstraint
+        constraint = NSLayoutConstraint(item: label, attribute: .top, relatedBy: .equal, toItem: firstPlayerButton, attribute: .bottom, multiplier: 1, constant: 5)
+        constraint.isActive = true
+        
+    }
+    
+    private func addSecondPlayerScoreLabelConstraint(for label: UILabel) {
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        var constraint: NSLayoutConstraint
+        constraint = NSLayoutConstraint(item: label, attribute: .bottom, relatedBy: .equal, toItem: secondPlayerButton, attribute: .top, multiplier: 1, constant: -5)
+        constraint.isActive = true
+    }
+    
+    private func createCardImageView(with image: UIImage) -> UIImageView {
         let imageView = UIImageView()
-        imageView.image = backImage
+        imageView.image = image
         imageView.contentMode = .scaleAspectFit
         
         self.addSubview(imageView)
-        
-        var bottomConstraint: NSLayoutConstraint!
-        var topConstraint: NSLayoutConstraint!
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
         
         imageView.widthAnchor.constraint(equalToConstant: self.frame.width/5).isActive = true
         imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor, multiplier: 1.54).isActive = true
+        return imageView
+    }
+    
+    private func flipCardAnimationWithRotation(imageView: UIImageView, to image: UIImage?, cardType: CardType, options: UIView.AnimationOptions, rotation: Bool) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+            switch cardType {
+            case .normal:
+                if let cardImage = image {
+                    imageView.image = cardImage
+                    UIView.transition(with: imageView, duration: 0.3, options: options, animations: {
+                        if rotation {
+                            imageView.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
+                        }
+                    }, completion: nil)
+                }
+            case .war:
+                UIView.transition(with: imageView, duration: 0.3, options: .curveLinear, animations: {
+                    if rotation {
+                        imageView.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
+                    }
+                }, completion: nil)
+            }
+        }
+    }
+    
+    public func createCardWithAnimation(with card: UIImage?, backImage : UIImage, for player: PlayerNumber, cardType: CardType) {
+        let imageView = createCardImageView(with: backImage)
+        var bottomConstraint: NSLayoutConstraint!
+        var topConstraint: NSLayoutConstraint!
+        var owner: PlayerNumber!
         
         switch player {
         case .first:
             bottomConstraint = NSLayoutConstraint(item: imageView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: -self.frame.height/10)
-            bottomConstraint?.isActive = true
+            bottomConstraint.isActive = true
             
             topConstraint = NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: self.bounds.height*0.01)
             
@@ -149,19 +246,8 @@ class PlayView: UIView {
                 self.layoutIfNeeded()
             })
             
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                switch cardType {
-                case .normal:
-                    if let cardImage = card {
-                        imageView.image = cardImage
-                        UIView.transition(with: imageView, duration: 0.3, options: .transitionFlipFromRight, animations: nil, completion: nil)
-                    }
-                    
-                case .war:
-                    break
-                }
-                imageView.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-            }
+            flipCardAnimationWithRotation(imageView: imageView, to: card, cardType: cardType, options: .transitionFlipFromRight, rotation: true)
+            owner = PlayerNumber.first
         case .second:
             bottomConstraint = NSLayoutConstraint(item: imageView, attribute: .bottom, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: -self.bounds.height*0.01)
             
@@ -175,65 +261,62 @@ class PlayView: UIView {
                 bottomConstraint.isActive = true
                 self.layoutIfNeeded()
             })
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                switch cardType {
-                case .normal:
-                    if let cardImage = card {
-                        imageView.image = cardImage
-                        UIView.transition(with: imageView, duration: 0.3, options: .transitionFlipFromLeft, animations: nil, completion: nil)
-                    }
-                case .war :
-                    break
-                }
-                imageView.transform = CGAffineTransform(rotationAngle: (CGFloat(Int.random(in: -20...20)) * .pi) / 180.0)
-                
-            }
+            flipCardAnimationWithRotation(imageView: imageView, to: card, cardType: cardType, options: .transitionFlipFromLeft, rotation: true)
+            owner = PlayerNumber.second
         case .nobody:
             break
         }
-        
-        cardImages.append((imageView, bottomConstraint, topConstraint, cardType))
+        cardViews.append(CardPropertiesUI(imageView: imageView, bottomConstraint: bottomConstraint, topConstraint: topConstraint, backImage: backImage, cardType: cardType, owner: owner))
     }
     
-    public func collectCardsAnimation(imageView: (UIImageView, NSLayoutConstraint, NSLayoutConstraint, CardType), player: PlayerNumber, completion: (() -> Void)?) {
+    public func collectCards(for player: PlayerNumber) {
+        for card in cardViews {
+            collectCardAnimation(cardProperties: card, player: player, completion: nil)
+        }
+        cardViews.removeAll()
+    }
+    
+    public func collectCardAnimation(cardProperties: CardPropertiesUI, player: PlayerNumber, completion: (() -> Void)?) {
         var centerConstraint: NSLayoutConstraint!
         self.layoutIfNeeded()
         UIView.animate(withDuration: 0.6, animations: {
-            
-            imageView.1.isActive = false
-            imageView.2.isActive = false
-            
-            centerConstraint = NSLayoutConstraint(item: imageView.0, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: 0)
-            centerConstraint.isActive = true
-            imageView.0.transform = CGAffineTransform.identity
-            
-            switch imageView.3 {
-            case .normal:
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                    self.layoutIfNeeded()
-                    imageView.0.image = UIImage(named: "blue_back") //!!!!!!!
-                    UIView.transition(with: imageView.0, duration: 0.3, options: .transitionFlipFromLeft, animations: nil, completion: nil)
-                }
-            case .war:
-                break
+
+            if player != .nobody {
+                cardProperties.bottomConstraint.isActive = false
+                cardProperties.topConstraint.isActive = false
+                centerConstraint = NSLayoutConstraint(item: cardProperties.imageView, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: 0)
+                centerConstraint.isActive = true
             }
+            cardProperties.imageView.transform = CGAffineTransform.identity
+            
+            self.flipCardAnimationWithRotation(imageView: cardProperties.imageView, to: cardProperties.backImage, cardType: cardProperties.cardType, options: .transitionFlipFromLeft, rotation: false)
             
             self.layoutIfNeeded()
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.8, execute: {
                 UIView.animate(withDuration: 1, animations: {
-                    centerConstraint.isActive = false
                     switch player {
                     case .first:
-                        imageView.0.bottomAnchor.constraint(equalTo: self.firstPlayerButton.bottomAnchor).isActive = true
+                        centerConstraint.isActive = false
+                        cardProperties.imageView.bottomAnchor.constraint(equalTo: self.firstPlayerButton.bottomAnchor).isActive = true
                     case .second:
-                        imageView.0.topAnchor.constraint(equalTo: self.secondPlayerButton.topAnchor).isActive = true
+                        centerConstraint.isActive = false
+                        cardProperties.imageView.topAnchor.constraint(equalTo: self.secondPlayerButton.topAnchor).isActive = true
                     case .nobody:
-                        break
+                        cardProperties.bottomConstraint.isActive = false
+                        cardProperties.topConstraint.isActive = false
+                        switch cardProperties.owner {
+                        case .first:
+                            cardProperties.imageView.bottomAnchor.constraint(equalTo: self.firstPlayerButton.bottomAnchor).isActive = true
+                        case .second:
+                            cardProperties.imageView.topAnchor.constraint(equalTo: self.secondPlayerButton.topAnchor).isActive = true
+                        case .nobody:
+                            break
+                        }
                     }
-                    //imageView.0.bottomAnchor.constraint(equalTo: self.firstPlayerButton.bottomAnchor).isActive = true
                     self.layoutIfNeeded()
-                    //imageView.0.removeFromSuperview()
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2, execute: {
+                        cardProperties.imageView.removeFromSuperview()
+                    })
                 })
             })
         })
@@ -245,3 +328,5 @@ class PlayView: UIView {
 enum CardType {
     case normal, war
 }
+
+
