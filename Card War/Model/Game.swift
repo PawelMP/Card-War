@@ -18,13 +18,13 @@ class Game {
     private var warCardCounter: Int
     
     var playerThatWon: PlayerNumber?
+    var message: String?
     
     init() {
         self.firstPlayerCardsStack = []
         self.secondPlayerCardsStack = []
         self.gameType = .normal
         warCardCounter = 0
-        //gameDidEnd = false
     }
     
     func startGame(players: [Player]) {
@@ -90,16 +90,28 @@ class Game {
                         
                         resetCards()
                         playerThatWon = .second
+                        message = """
+                        Second player won with \(secondPlayer.cards.count) points
+
+                        First player did not have
+                        enough cards to play war
+                        """
                         dealEnded(.second)
                         return //np return false i w GameViewModel jezeli funkcja zwroci false to wtedy wywoluje metode z delegate powiadamiajaca o wygranej gracza
                     }
                     if secondPlayer.cards.isEmpty == true || secondPlayer.cards.count == 1 {
-                        print("Second player doestn have enough cards to play war - loses")
+                        print("Second player does not have enough cards to play war - loses")
                         firstPlayer.cards += firstPlayerCardsStack
                         firstPlayer.cards += secondPlayerCardsStack
                         
                         resetCards()
                         playerThatWon = .first
+                        message = """
+                        First player won with \(firstPlayer.cards.count) points
+
+                        Second player did not have
+                        enough cards to play war
+                        """
                         dealEnded(.first)
                         return
                     }
@@ -120,6 +132,11 @@ class Game {
                     print("First player cards \(firstPlayer.cards.count)")
                     print("Second player cards \(secondPlayer.cards.count)")
                     if secondPlayer.cards.isEmpty {
+                        message = """
+                        First player won with \(firstPlayer.cards.count) points
+
+                        Second player run out of cards
+                        """
                         playerThatWon = .first
                     }
                     
@@ -135,6 +152,11 @@ class Game {
                     print("Second player cards \(secondPlayer.cards.count)")
                     
                     if firstPlayer.cards.isEmpty {
+                        message = """
+                        Second player won with \(secondPlayer.cards.count) points
+
+                        First player run out of cards
+                        """
                         playerThatWon = .second
                     }
                     

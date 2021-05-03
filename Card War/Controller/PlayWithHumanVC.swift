@@ -20,18 +20,21 @@ class PlayWithHumanVC: UIViewController {
         myView = PlayView(frame: K.Screen.Frame)
         view = myView
     }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        
         setupActions()
         
         gameViewModel = GameViewModel()
         gameViewModel?.delegate = self
         gameViewModel?.updatePlayersScore()
+        
+        enablePlayersButtons()
     }
     
     private func setupActions() {
-        myView?.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(descriptionLabelPressed(_:))))
+        myView?.descriptionLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(descriptionLabelPressed(_:))))
         
         myView?.firstPlayerButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         
@@ -42,16 +45,15 @@ class PlayWithHumanVC: UIViewController {
         myView?.collectCardsSecondPlayerButton.addTarget(self, action: #selector(collectCardsForSecondPlayer(_:)), for: .touchUpInside)
         
         myView?.collectCardsWhenDrawButton.addTarget(self, action: #selector(collectCardsWhenDraw(_:)), for: .touchUpInside)
+        
+        myView?.exitButton.addTarget(self, action: #selector(exitToHome(_ :)), for: .touchUpInside)
+        myView?.exitButton.addTarget(self, action: #selector(exitToHomeTouched(_ :)), for: .touchDown)
+
     }
     
     @objc func descriptionLabelPressed(_ sender: UITapGestureRecognizer) {
-        print("Pressed")
-        //sender.isEnabled = false
-        //sender.isHidden = false
-        myView?.descriptionLabel.isHidden = true
+        myView?.descriptionLabel.removeFromSuperview()
         enablePlayersButtons()
-        //sender.text = " LOL"
-        //sender.isEnabled = false
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
@@ -93,6 +95,15 @@ class PlayWithHumanVC: UIViewController {
         self.gameViewModel?.updatePlayersScore()
     }
     
+    @objc func exitToHome(_ sender: UIButton) {
+        sender.alpha = 1
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    @objc func exitToHomeTouched(_ sender: UIButton) {
+        sender.alpha = 0.7
+    }
+    
 
     private func enablePlayersButtons() {
         myView?.firstPlayerButton.isEnabled = true
@@ -105,15 +116,14 @@ class PlayWithHumanVC: UIViewController {
         myView?.collectCardsWhenDrawButton.isEnabled = false
     }
     
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func presentEndVC(with message: String, viewController: EndVC) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2 , execute: {
+            viewController.modalTransitionStyle = .crossDissolve
+            viewController.modalPresentationStyle = .fullScreen
+            viewController.results = message
+            self.present(viewController, animated: true, completion: nil)
+        })
     }
-    */
 
 }
 
@@ -155,13 +165,13 @@ extension PlayWithHumanVC: GameViewModelDelegate {
         enablePlayersButtons()
     }
     
-    func firstPlayerWonGame() {
-        print("First player won whole gaaaaame")
+    func firstPlayerWonGame(message: String) {
+        presentEndVC(with: message, viewController: EndVC())
         disableButtons()
     }
     
-    func secondPlayerWonGame() {
-        print("Second player won whole gaaaaame")
+    func secondPlayerWonGame(message: String) {
+        presentEndVC(with: message, viewController: EndVC())
         disableButtons()
     }
     

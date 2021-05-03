@@ -73,30 +73,30 @@ class HomeView: UIView {
     
     private func manageSubviews() {
         addSubview(backgroundImageView)
-        addBackgroundImageViewConstraints()
+        backgroundImageViewConstraints()
         
         addSubview(logoImageView)
-        addLogoImageViewConstraints()
+        logoImageViewConstraints()
         
         addSubview(nameLabel)
-        addNameLabelConstraints()
+        nameLabelConstraints()
         
         addSubview(playWithHumanButton)
         addSubview(playWithComputerButton)
         
         buttonsStackView = setupButtonsStackView()
         addSubview(buttonsStackView)
-        addButtonStackViewConstraints()
+        buttonStackViewConstraints()
 
     }
     
-    private func addBackgroundImageViewConstraints() {
+    private func backgroundImageViewConstraints() {
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
         backgroundImageView.widthAnchor.constraint(equalToConstant: self.bounds.width).isActive = true
         backgroundImageView.heightAnchor.constraint(equalToConstant: self.bounds.height).isActive = true
     }
     
-    private func addLogoImageViewConstraints() {
+    private func logoImageViewConstraints() {
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         logoImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
         logoImageView.topAnchor.constraint(equalTo: self.topAnchor, constant: self.bounds.height/10).isActive = true
@@ -105,7 +105,7 @@ class HomeView: UIView {
         logoImageView.heightAnchor.constraint(equalTo: logoImageView.widthAnchor).isActive = true
     }
     
-    private func addNameLabelConstraints() {
+    private func nameLabelConstraints() {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
         nameLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant:0).isActive = true
@@ -120,7 +120,7 @@ class HomeView: UIView {
         return stackView
     }
     
-    private func addButtonStackViewConstraints() {
+    private func buttonStackViewConstraints() {
         buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
         buttonsStackView.widthAnchor.constraint(equalToConstant: self.bounds.width-80).isActive = true
         buttonsStackView.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true

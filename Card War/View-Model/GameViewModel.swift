@@ -16,8 +16,8 @@ protocol GameViewModelDelegate {
     func secondPlayerPlayWarCard(backImage: UIImage)
     func warExists()
     func dealDidEnd(player: PlayerNumber)
-    func firstPlayerWonGame()
-    func secondPlayerWonGame()
+    func firstPlayerWonGame(message: String)
+    func secondPlayerWonGame(message: String)
 }
 
 class GameViewModel {
@@ -86,13 +86,15 @@ class GameViewModel {
     }
     
     func checkIfGameNeedsToEnd() {
-        switch game.playerThatWon {
-        case .first:
-            delegate?.firstPlayerWonGame()
-        case .second:
-            delegate?.secondPlayerWonGame()
-        default:
-            break
+        if let msg = game.message {
+            switch game.playerThatWon {
+            case .first:
+                delegate?.firstPlayerWonGame(message: msg)
+            case .second:
+                delegate?.secondPlayerWonGame(message: msg)
+            default:
+                break
+            }
         }
     }
     
